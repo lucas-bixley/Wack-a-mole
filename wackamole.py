@@ -7,11 +7,13 @@ from PyQt5.QtCore import QTimer, Qt
 class WackAMoleGame(QMainWindow):
     def __init__(self):
         super().__init__()
+        #create window
         self.setWindowTitle("Whack-a-Mole")
         self.setGeometry(100, 100, 400, 500)
         self.board = [['' for _ in range(5)] for _ in range(5)]
-        self.score = 0
+        self.mole_position = (-1, -1)  # No mole at the start
         self.game_duration = 0  # Initialize game duration
+ 
         self.initUI()
 
     def initUI(self):
@@ -58,17 +60,50 @@ class WackAMoleGame(QMainWindow):
             self.game_duration = self.time_limit
             self.timer_label.setText(f"Time left: {self.game_duration} s")
             self.timer_limit.start(self.time_limit * 1000)
-
         # Timer countdown update
         self.update_timer = QTimer()
         self.update_timer.timeout.connect(self.update_timer_display)
-        self.update_timer.start(1000)  # Update every second
+         # Update every second
+        self.update_timer.start(1000) 
+            # Mole creation timer
+        self.mole_timer = QTimer()
+        self.mole_timer.timeout.connect(self.spawn_mole)
+        self.mole_timer.start(1000)  # Mole appears every second
 
     def update_timer_display(self):
         self.game_duration -= 1
         self.timer_label.setText(f"Time left: {self.game_duration} s")
         if self.game_duration <= 0:
             self.end_game()
+             
+    #  button click purpose
+    def on_click(self, row, col):
+        button = self.sender()
+        if button.text() == 'M':
+            self.score += 1
+            button.setText('')
+            self.score_label.setText(f"Score: {self.score}")
+            self.mole_position = (-1, -1)  # Reset mole position
+   #create button purpose
+    def on_click(self, row, col):
+        button = self.sender()
+        if button.text() == 'M':
+            self.score += 1
+            button.setText('')
+      #create mole
+    def spawn_mole(self):
+        # Clear the previous mole
+        if self.mole_position != (-1, -1):
+            prev_row, prev_col = self.mole_position
+            self.push_buttons[prev_row * 5 + prev_col].setText('')
+
+         # Pick a random position
+        row = random.randint(0, 4)
+        col = random.randint(0, 4)
+        self.push_buttons[row * 5 + col].setText('Mole')
+        self.mole_position = (row, col)
+        
+      #create scoreboard
 
 
     def end_game(self):
